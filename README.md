@@ -44,9 +44,13 @@ The following API's are implemented:
 
  - insert
  - update
+ - upsert
  - get
  - key
  - runQuery
  - createQuery
+     - filter
+     - limit
+     - select
 
 More are trivially implementable, log an issue or send me a PR.
