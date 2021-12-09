@@ -91,6 +91,44 @@ test('upsert', async function(t){
     }]);
 });
 
+test('save', async function(t){
+    t.plan(2);
+
+    var db = new Datastore();
+
+    await db.insert({
+        key: db.key(['things', 1]),
+        data: {
+            abc: 123
+        }
+    });
+
+    await db.save({
+        key: db.key(['things', 1]),
+        data: {
+            abc: 456
+        }
+    });
+
+    await db.save({
+        key: db.key(['things', 2]),
+        data: {
+            abc: 789
+        }
+    });
+
+    var record1 = await db.get(db.key(['things', 1]));
+    var record2 = await db.get(db.key(['things', 2]));
+
+    t.deepEqual(record1, [{
+        abc: 456
+    }]);
+
+    t.deepEqual(record2, [{
+        abc: 789
+    }]);
+});
+
 test('query records', async function(t){
     t.plan(1);
     
