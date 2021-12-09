@@ -162,6 +162,7 @@ function Datastore(){
         insert: insert.bind(null, data),
         update: update.bind(null, data),
         upsert: upsert.bind(null, data),
+        save: upsert.bind(null, data),
         get: get.bind(null, data),
         key: createKey,
         runQuery: (query) => runQuery(data, query),
