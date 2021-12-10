@@ -2,6 +2,7 @@ var { v4: uuid } = require('uuid');
 var operators = require('./operators');
 var KEY_SELECT = '__key__';
 var KEY_EXISTS = Symbol('KEY_EXISTS');
+var KEY = Symbol('KEY');
 
 function filter(query, field, operator, value){
     query.filters.push([field, operator, value]);
@@ -32,23 +33,23 @@ function createQuery(query){
     };
 }
 
-function pick(collection, selectFields, key){
+function pick(collection, selectFields, id){
     if(selectFields == null) {
-        return { ...collection[key] };
+        return { ...collection[id] };
     }
 
     if(selectFields.includes(KEY_SELECT)){
-        return key;
+        return id;
     }
 
     return selectFields.reduce((result, field) => {
-        if(field === '__key__') {
-            return key
+        if(field === '__id__') {
+            return id
         }
 
-        result[field] = collection[key][field];
+        result[field] = collection[id][field];
         return result;
-    }, {});
+    }, { [KEY]: collection[id][KEY] });
 }
 
 async function runQuery(data, query){
@@ -58,10 +59,10 @@ async function runQuery(data, query){
     var selectFields = query.query.select;
     var collectionPick = pick.bind(null, collection, selectFields);
 
-    return [Object.keys(collection || {}).filter(key => 
+    return [Object.keys(collection || {}).filter(id => 
         filters.every(filter => 
             operators[filter[1]](
-                collection[key][filter[0]],
+                collection[id][filter[0]],
                 filter[2]
             )
         )
@@ -107,6 +108,7 @@ async function insertOne(data, config) {
         }
     }
 
+    record[KEY] = key;
     return set(data, collection, id, record);
 }
 
@@ -164,6 +166,7 @@ function Datastore(){
         upsert: upsert.bind(null, data),
         get: get.bind(null, data),
         key: createKey,
+        KEY: KEY,
         runQuery: (query) => runQuery(data, query),
         createQuery: function(collection){
             return createQuery({
@@ -173,5 +176,7 @@ function Datastore(){
         }
     };
 };
+
+Datastore.KEY = KEY;
 
 module.exports = Datastore;
