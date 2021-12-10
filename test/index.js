@@ -295,3 +295,51 @@ test('select __key__ and other fields throws', async function(t){
             .select(['__key__', 'other'])
     })
 });
+
+test('Access created key with KEY symbol', async function(t){
+    t.plan(2);
+    
+    var db = new Datastore();
+
+    await db.insert([
+        {
+            key: db.key(['things', 1]),
+            data: {
+                abc: 123,
+                foo: 'bar'
+            }
+        },
+        {
+            key: db.key(['things', 2]),
+            data: {
+                abc: 234,
+                foo: 'bar'
+            }
+        },
+        {
+            key: db.key(['things', 3]),
+            data: {
+                abc: 345,
+                foo: 'baz'
+            }
+        },
+        {
+            key: db.key(['things', 4]),
+            data: {
+                abc: 456,
+                foo: 'bar'
+            }
+        }
+    ]);
+
+    var records = await db.runQuery(
+        db.createQuery('things')
+        .select('foo')
+        .filter('abc', '>', 123)
+        .filter('foo', '=', 'bar')
+        .limit(1)
+    );
+
+    t.deepEqual(records[0][0][Datastore.KEY], db.key(['things', 2]));
+    t.deepEqual(records[0][0][db.KEY], db.key(['things', 2]));
+});
